@@ -7,6 +7,10 @@ Created on Fri May  6 23:04:32 2016
 import csv
 from bokeh.plotting import figure, output_file, show
 from bokeh.models import Range1d 
+import math
+from numpy import dot 
+from linear_algebra import sum_of_squares, dot
+
 
 
 
@@ -36,9 +40,7 @@ with open ('Projected_Population_2010-2040_-_Summary.csv', 'rU') as f:
     
     Boros=[Bronx, Brooklyn, Manhattan, Queens, SIsland]    
     
-    print "Bronx", Bronx
-    print "Brooklyn", Brooklyn     
-        
+    
     Bronx=[int(i)/1000 for i in Bronx]
     Brooklyn=[int(i)/1000 for i in Brooklyn]
     Manhattan=[int(i)/1000 for i in Manhattan]
@@ -50,6 +52,8 @@ with open ('Projected_Population_2010-2040_-_Summary.csv', 'rU') as f:
     BkPrevPop=[2447000, 2511000, 2523000, 2550000, 2567000, 2510000, 2541000, 2568000] #, 2592000, 2621000]
     
     
+    
+    
     BxPrevPop=[i/1000 for i in BxPrevPop]
     BkPrevPop=[i/1000 for i in BkPrevPop]    
     HistoricYears=[1999,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014]
@@ -57,7 +61,6 @@ with open ('Projected_Population_2010-2040_-_Summary.csv', 'rU') as f:
     
     years=[2010, 2020,2030,2040]
 
-             
              
     p = figure(width=800, height=500)
     output_file("NYCfuturePop.html", title="futurePopulation")
@@ -78,5 +81,50 @@ with open ('Projected_Population_2010-2040_-_Summary.csv', 'rU') as f:
     p.ygrid.band_fill_color="olive"
     p.ygrid.band_fill_alpha = 0.1
 
-show(p)
+#show(p)
+
+
+
+
+def mean(x): 
+    return sum(x) / len(x)
+
+def de_mean(x):
+    """translate x by subtracting its mean (so the result has mean 0)"""
+    x_bar = mean(x)
+    return [x_i - x_bar for x_i in x]
+
+def variance(x):
+    """assumes x has at least two elements"""
+    n = len(x)
+    deviations = de_mean(x)
+    return sum_of_squares(deviations) / (n - 1)
+
+def standard_deviation(x):
+    return math.sqrt(variance(x))
+
+def covariance(x, y):
+    n = len(x)
+    return dot(de_mean(x), de_mean(y)) / (n - 1)
+
+
+def correlation(x, y):
+    stdev_x = standard_deviation(x)
+    stdev_y = standard_deviation(y)
+    if stdev_x > 0 and stdev_y > 0:
+        return covariance(x, y) / stdev_x / stdev_y
+    else:
+        return 0 # if no variation, correlation is zero
+
+
+def main():
+
+    bronx=BkPrevPop+Bronx
+    bk=BkPrevPop+Brooklyn
+    
+    print bronx
+    print bk
+    
+    print "correlation", correlation(bk, bronx)
+main() 
 
